@@ -1,21 +1,47 @@
 
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { toast } from "sonner";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY", // You'll need to replace this with your actual Firebase API key
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || process.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || process.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || process.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || process.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || process.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
 
+// Check if we have proper Firebase configuration
+const isFirebaseConfigured = () => {
+  const { apiKey, projectId } = firebaseConfig;
+  return (
+    apiKey && 
+    apiKey !== "YOUR_API_KEY" && 
+    projectId && 
+    projectId !== "YOUR_PROJECT_ID"
+  );
+};
+
+// Initialize Firestore and export
+let db;
+
+try {
+  if (!isFirebaseConfigured()) {
+    console.error("Firebase configuration is missing or using placeholder values.");
+    toast.error("تنظیمات Firebase ناقص است. لطفا راهنمای نصب را مطالعه کنید.");
+  }
+  db = getFirestore(app);
+} catch (error) {
+  console.error("Error initializing Firebase:", error);
+  toast.error("خطا در راه‌اندازی Firebase");
+}
+
+export { db };
 export default app;
