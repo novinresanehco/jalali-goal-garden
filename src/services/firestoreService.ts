@@ -1,3 +1,4 @@
+
 import { 
   collection, 
   addDoc, 
@@ -136,7 +137,7 @@ export const getProject = async (id: string) => {
   const docRef = doc(db, 'projects', id);
   const docSnap = await getDoc(docRef);
   if (docSnap.exists()) {
-    return { id: docSnap.id, ...docSnap.data() } as Project;
+    return { id: docSnap.id, ...doc.data() } as Project;
   }
   return null;
 };
@@ -311,9 +312,9 @@ export const getOverdueTasks = async (todayJalali: string) => {
   return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
 };
 
-export const getActiveTasks = async (collection: string, status: string) => {
+export const getActiveTasks = async (collectionName: string, status: string) => {
   const q = query(
-    collection(db, collection),
+    collection(db, collectionName),
     where('status', '==', status),
     orderBy('createdAt', 'desc')
   );
@@ -351,3 +352,4 @@ export const getTags = async () => {
   const querySnapshot = await getDocs(collection(db, 'tags'));
   return querySnapshot.docs.map(doc => doc.data() as Tag);
 };
+

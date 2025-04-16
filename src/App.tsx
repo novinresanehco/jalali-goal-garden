@@ -27,7 +27,7 @@ const App = () => {
         !projectId || projectId === "your_project_id_here" || projectId.includes("YOUR_PROJECT_ID")) {
       toast.error("تنظیمات Firebase ناقص است. لطفا فایل .env.local را تنظیم کنید.", {
         duration: 15000,
-        description: "در فایل FIREBASE_SETUP.md دستورالعمل‌های راه‌اندازی Firebase را ببینید."
+        description: "برای راه‌اندازی Firebase، یک فایل .env.local در پوشه اصلی پروژه ایجاد کنید و اطلاعات مربوط به Firebase خود را در آن وارد کنید. مثال:\nVITE_FIREBASE_API_KEY=your_api_key_here\nVITE_FIREBASE_AUTH_DOMAIN=your_domain.firebaseapp.com\nVITE_FIREBASE_PROJECT_ID=your_project_id\nVITE_FIREBASE_STORAGE_BUCKET=your_bucket.appspot.com\nVITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id\nVITE_FIREBASE_APP_ID=your_app_id"
       });
       console.error("Firebase configuration missing or invalid. Please set up .env.local file with your Firebase credentials.");
     }
