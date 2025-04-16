@@ -1,4 +1,3 @@
-
 import { 
   collection, 
   addDoc, 
@@ -137,7 +136,7 @@ export const getProject = async (id: string) => {
   const docRef = doc(db, 'projects', id);
   const docSnap = await getDoc(docRef);
   if (docSnap.exists()) {
-    return { id: docSnap.id, ...doc.data() } as Project;
+    return { id: docSnap.id, ...docSnap.data() } as Project;
   }
   return null;
 };
@@ -217,7 +216,6 @@ export const completeTask = async (id: string, completionDateJalali: string) => 
   }
 };
 
-// Helper function to calculate next occurrence based on recurring rule
 export const calculateNextOccurrence = (currentDateJalali: string, recurringRule: string): string => {
   // Split the date into parts
   const [year, month, day] = currentDateJalali.split('/').map(Number);
@@ -352,4 +350,3 @@ export const getTags = async () => {
   const querySnapshot = await getDocs(collection(db, 'tags'));
   return querySnapshot.docs.map(doc => doc.data() as Tag);
 };
-
