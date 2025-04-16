@@ -1,4 +1,3 @@
-
 import { 
   collection, 
   addDoc, 
@@ -12,7 +11,8 @@ import {
   orderBy, 
   serverTimestamp,
   Timestamp,
-  setDoc
+  setDoc,
+  limit
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Goal, Idea, Project, Task, Tag } from '@/lib/models';
@@ -186,11 +186,65 @@ export const updateTask = async (id: string, task: Partial<Omit<Task, 'id' | 'cr
 
 export const completeTask = async (id: string, completionDateJalali: string) => {
   const docRef = doc(db, 'tasks', id);
-  return await updateDoc(docRef, {
-    status: 'Done',
-    completionDateJalali,
-    updatedAt: serverTimestamp()
-  });
+  const taskSnap = await getDoc(docRef);
+  
+  if (taskSnap.exists()) {
+    const taskData = taskSnap.data() as Task;
+    
+    // If task is recurring, create next occurrence
+    if (taskData.isRecurring && taskData.recurringRule) {
+      // Create the next occurrence based on the recurring rule
+      const nextOccurrence = calculateNextOccurrence(taskData.dueDateJalali, taskData.recurringRule);
+      
+      // Create a new task with the next occurrence date
+      const newTask: Omit<Task, 'id' | 'createdAt' | 'updatedAt'> = {
+        ...taskData,
+        status: 'ToDo',
+        dueDateJalali: nextOccurrence,
+        completionDateJalali: undefined
+      };
+      
+      await addTask(newTask);
+    }
+    
+    // Mark the current task as done
+    return await updateDoc(docRef, {
+      status: 'Done',
+      completionDateJalali,
+      updatedAt: serverTimestamp()
+    });
+  }
+};
+
+// Helper function to calculate next occurrence based on recurring rule
+export const calculateNextOccurrence = (currentDateJalali: string, recurringRule: string): string => {
+  // Split the date into parts
+  const [year, month, day] = currentDateJalali.split('/').map(Number);
+  
+  // Create a Date object
+  const date = new Date(year, month - 1, day);
+  
+  // Apply recurring rule logic
+  switch (recurringRule) {
+    case 'daily':
+      date.setDate(date.getDate() + 1);
+      break;
+    case 'weekly':
+      date.setDate(date.getDate() + 7);
+      break;
+    case 'monthly':
+      date.setMonth(date.getMonth() + 1);
+      break;
+    case 'yearly':
+      date.setFullYear(date.getFullYear() + 1);
+      break;
+    default:
+      // For custom rules, a more complex calculation would be needed
+      date.setDate(date.getDate() + 1); // Default to daily
+  }
+  
+  // Format the date back to Jalali
+  return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
 };
 
 export const deleteTask = async (id: string) => {
@@ -237,13 +291,34 @@ export const getTasksByDueDate = async (dueDateJalali: string) => {
 export const getTodayTasks = async (todayJalali: string) => {
   const q = query(
     collection(db, 'tasks'),
-    where('dueDateJalali', '<=', todayJalali),
+    where('dueDateJalali', '==', todayJalali),
     where('status', '==', 'ToDo'),
-    orderBy('dueDateJalali'),
     orderBy('priority')
   );
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
+};
+
+export const getOverdueTasks = async (todayJalali: string) => {
+  const q = query(
+    collection(db, 'tasks'),
+    where('dueDateJalali', '<', todayJalali),
+    where('status', '==', 'ToDo'),
+    orderBy('dueDateJalali', 'desc'),
+    orderBy('priority')
+  );
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
+};
+
+export const getActiveTasks = async (collection: string, status: string) => {
+  const q = query(
+    collection(db, collection),
+    where('status', '==', status),
+    orderBy('createdAt', 'desc')
+  );
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
 // Tags functions

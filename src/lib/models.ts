@@ -7,6 +7,7 @@ export interface Goal {
   description: string;
   status: 'Active' | 'Achieved' | 'On Hold';
   targetDateJalali: string; // YYYY-MM-DD format
+  tags?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -45,10 +46,12 @@ export interface Task {
   description?: string;
   status: 'ToDo' | 'Done';
   dueDateJalali: string; // YYYY-MM-DD format
+  dueTimeJalali?: string; // HH:MM format - new field for specific time
   priority: 'High' | 'Medium' | 'Low' | 'None';
   projectId?: string; // Reference to project
+  projectTitle?: string; // Project title for display purposes
   isRecurring: boolean;
-  recurringRule?: string; // e.g., "daily", "weekly", "monthly_day_15"
+  recurringRule?: string; // e.g., "daily", "weekly", "monthly", "yearly"
   reminderSettings?: {
     enabled: boolean;
     remindAtJalali: string; // YYYY-MM-DD HH:MM format

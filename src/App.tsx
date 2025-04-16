@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import Dashboard from "./pages/Dashboard";
@@ -23,11 +23,13 @@ const App = () => {
     const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
     const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
     
-    if (!apiKey || apiKey === "your_api_key_here" || !projectId || projectId === "your_project_id_here") {
+    if (!apiKey || apiKey === "your_api_key_here" || apiKey.includes("YOUR_API_KEY") || 
+        !projectId || projectId === "your_project_id_here" || projectId.includes("YOUR_PROJECT_ID")) {
       toast.error("تنظیمات Firebase ناقص است. لطفا فایل .env.local را تنظیم کنید.", {
-        duration: 10000,
+        duration: 15000,
+        description: "در فایل FIREBASE_SETUP.md دستورالعمل‌های راه‌اندازی Firebase را ببینید."
       });
-      console.error("Firebase configuration missing. Please set up .env.local file with your Firebase credentials.");
+      console.error("Firebase configuration missing or invalid. Please set up .env.local file with your Firebase credentials.");
     }
   }, []);
   
